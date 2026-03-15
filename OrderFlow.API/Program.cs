@@ -1,4 +1,5 @@
 using MassTransit;
+using OrderFlow.Contracts.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddMassTransit(buscfg =>
 {
+   
+
     buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
     {
         rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>
@@ -18,6 +21,7 @@ builder.Services.AddMassTransit(buscfg =>
             hostcfg.Password("123");
 
         });
+        rabbitbusfactorycfgtor.SendTopology.UseCorrelationId<OrderCreated>(o => o.Id);
     });
 });
 

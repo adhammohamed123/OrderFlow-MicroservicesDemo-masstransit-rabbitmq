@@ -15,10 +15,7 @@ namespace OrderFlow.API.Controllers
         {
             var order = new OrderCreated(Id: Guid.NewGuid(), CustomerId: Guid.NewGuid(), 150);
 
-            await _publish.Publish(order, context =>
-            {
-                context.CorrelationId = order.Id;
-            },cancellationToken);
+            await _publish.Publish(order,cancellationToken);
 
             return Accepted();
         }
