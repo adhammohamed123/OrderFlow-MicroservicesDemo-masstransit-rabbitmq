@@ -13,13 +13,12 @@ namespace OrderFlow.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateNewOrder(CancellationToken cancellationToken)
         {
-            var orderId= Guid.NewGuid();
-            var order = new OrderCreated(Id: orderId, CustomerId: Guid.NewGuid(), 150)
-            {
-                CorrelationId = orderId
-            };
+            var order = new OrderCreated(Id: Guid.NewGuid(), CustomerId: Guid.NewGuid(), 150);
 
-            await  _publish.Publish(order,cancellationToken);
+            await _publish.Publish(order, context =>
+            {
+                context.CorrelationId = order.Id;
+            },cancellationToken);
 
             return Accepted();
         }

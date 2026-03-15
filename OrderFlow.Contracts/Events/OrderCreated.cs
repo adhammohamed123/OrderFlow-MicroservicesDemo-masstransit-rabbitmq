@@ -10,7 +10,6 @@ namespace OrderFlow.Contracts.Events
     public record OrderCreated(Guid Id,Guid CustomerId,decimal TotalAmount)
     {
         public DateTime CreatedAtUtc { get; init; }= DateTime.Now;
-        public Guid CorrelationId { get; init; }
     }
    
 }
