@@ -1,5 +1,4 @@
 using MassTransit;
-using OrderFlow.PaymentWorker;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddMassTransit(buscfg =>

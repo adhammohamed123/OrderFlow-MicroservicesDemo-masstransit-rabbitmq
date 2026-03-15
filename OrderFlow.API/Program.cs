@@ -21,7 +21,7 @@ builder.Services.AddMassTransit(buscfg =>
             hostcfg.Password("123");
 
         });
-        rabbitbusfactorycfgtor.SendTopology.UseCorrelationId<OrderCreated>(o => o.Id);
+        //rabbitbusfactorycfgtor.SendTopology.UseCorrelationId<OrderCreated>(o => o.Id);
     });
 });
 

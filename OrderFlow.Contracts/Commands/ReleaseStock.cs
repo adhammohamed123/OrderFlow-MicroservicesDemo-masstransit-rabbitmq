@@ -1,4 +1,9 @@
-﻿namespace OrderFlow.Contracts.Commands
+﻿using OrderFlow.Contracts.Dtos;
+
+namespace OrderFlow.Contracts.Commands
 {
-    public record ReleaseStock { }
+    public record ReleaseStock 
+    {
+        
+    }
 }

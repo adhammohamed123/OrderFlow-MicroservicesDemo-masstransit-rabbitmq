@@ -6,5 +6,8 @@ using System.Threading.Tasks;
 
 namespace OrderFlow.Contracts.Requests
 {
-    public record GetOrderStatus { }
+    public record GetOrderStatus 
+    {
+        public Guid OrderId { get; init; }
+    }
 }
