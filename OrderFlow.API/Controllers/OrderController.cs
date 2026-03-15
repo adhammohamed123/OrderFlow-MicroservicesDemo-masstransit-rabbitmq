@@ -15,7 +15,14 @@ namespace OrderFlow.API.Controllers
         {
             var order = new OrderCreated(Id: Guid.NewGuid(), CustomerId: Guid.NewGuid(), 150);
 
-            await _publish.Publish(order,cancellationToken);
+            await _publish.Publish(order, context =>
+            {
+                context.Headers.Set("tanant-id", "tanant-123");
+                context.Headers.Set("periority","high");
+                context.Headers.Set("num", 120);
+                context.Headers.Set("TTL", "10s");
+                context.TimeToLive = TimeSpan.FromSeconds(10);
+            },cancellationToken);
 
             return Accepted();
         }
