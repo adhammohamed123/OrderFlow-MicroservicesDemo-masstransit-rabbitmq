@@ -4,7 +4,8 @@ using OrderFlow.PaymentWorker;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddMassTransit(buscfg =>
 {
-    buscfg.AddConsumer<OrderCreatedConsumer>();
+    //buscfg.AddConsumer<OrderCreatedConsumer>();
+    buscfg.AddConsumers(typeof(Program).Assembly);
     buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
     {
         rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>

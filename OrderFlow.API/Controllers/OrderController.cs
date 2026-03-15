@@ -13,15 +13,10 @@ namespace OrderFlow.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateNewOrder(CancellationToken cancellationToken)
         {
-            var order = new OrderCreated(Id: Guid.NewGuid(), CustomerId: Guid.NewGuid(), 150);
-
-            await _publish.Publish(order, context =>
+           await _publish.Publish<OrderCreated>(new
             {
-                context.Headers.Set("tanant-id", "tanant-123");
-                context.Headers.Set("periority","high");
-                context.Headers.Set("num", 120);
-                context.Headers.Set("TTL", "10s");
-                context.TimeToLive = TimeSpan.FromSeconds(10);
+                Id=Guid.NewGuid(),
+                CreatedAtUtc=InVar.Timestamp
             },cancellationToken);
 
             return Accepted();
