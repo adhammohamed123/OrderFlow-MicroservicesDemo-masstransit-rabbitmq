@@ -13,11 +13,7 @@ namespace OrderFlow.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateNewOrder(CancellationToken cancellationToken)
         {
-           await _publish.Publish<OrderCreated>(new
-            {
-                Id=NewId.NextGuid(),
-                CreatedAtUtc=InVar.Timestamp
-            },cancellationToken);
+          
 
             return Accepted();
         }
