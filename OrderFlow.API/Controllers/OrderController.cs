@@ -15,7 +15,7 @@ namespace OrderFlow.API.Controllers
         {
            await _publish.Publish<OrderCreated>(new
             {
-                Id=Guid.NewGuid(),
+                Id=NewId.NextGuid(),
                 CreatedAtUtc=InVar.Timestamp
             },cancellationToken);
 
