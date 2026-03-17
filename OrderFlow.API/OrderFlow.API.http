@@ -4,7 +4,9 @@ GET {{OrderFlow.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+@custname=adham
+@custemail={{custname}}mo909@gmail.com
 
-POST {{OrderFlow.API_HostAddress}}/api/orders
+POST {{OrderFlow.API_HostAddress}}/api/orders?custname={{custname}}&custemail={{custemail}}
 
 ###

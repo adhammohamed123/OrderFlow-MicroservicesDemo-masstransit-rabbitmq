@@ -1,4 +1,5 @@
 using MassTransit;
+using Payment;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddMassTransit(buscfg =>
@@ -12,6 +13,11 @@ builder.Services.AddMassTransit(buscfg =>
             hostcfg.Username("test");
             hostcfg.Password("123");
 
+        });
+
+        rabbitbusfactorycfgtor.ReceiveEndpoint("payment-service", endpoint =>
+        {
+            endpoint.ConfigureConsumer<OrderCreatedConsumer>(buscontext);
         });
 
         rabbitbusfactorycfgtor.ConfigureEndpoints(buscontext);
