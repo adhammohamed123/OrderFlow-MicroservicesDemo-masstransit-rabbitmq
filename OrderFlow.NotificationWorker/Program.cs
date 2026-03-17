@@ -24,6 +24,10 @@ builder.Services.AddMassTransit(buscfg =>
              // also we can limit queue length (save send tokens) x-max-length,
 
             // also we can make this consumer work with batches (save object intialization of smtp)
+
+
+            // add stock reserved consumer
+            endpoint.ConfigureConsumer<StockReservedConsumer>(buscontext);
         });
 
         rabbitbusfactorycfgtor.ConfigureEndpoints(buscontext);

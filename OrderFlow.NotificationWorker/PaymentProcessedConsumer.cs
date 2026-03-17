@@ -1,4 +1,5 @@
 using MassTransit;
+using OrderFlow.Contracts.Events.Inventory;
 using OrderFlow.Contracts.Events.Payment;
 
 namespace OrderFlow.NotificationWorker
@@ -29,7 +30,40 @@ namespace OrderFlow.NotificationWorker
     {
         protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<PaymentProcessedConsumer> consumerConfigurator, IRegistrationContext context)
         {
-            consumerConfigurator.Options<BatchOptions>(options => options.SetConcurrencyLimit(2).SetMessageLimit(100).SetTimeLimit(TimeSpan.FromMinutes(2)));
+            consumerConfigurator.Options<BatchOptions>(options => options.SetConcurrencyLimit(2).SetMessageLimit(100).SetTimeLimit(TimeSpan.FromSeconds(10)));
         }
     }
+
+
+
+    public class StockReservedConsumer : IConsumer<Batch<StockReserved>>
+    {
+        public async Task Consume(ConsumeContext<Batch<StockReserved>> context)
+        {
+            foreach (var consumecontext in context.Message)
+            {
+               await Consume(consumecontext);
+            }
+        }
+
+        public static async Task Consume(ConsumeContext<StockReserved> context)
+        {
+            Console.WriteLine($"We Now Sending Notification to {context.Message.CustomerEmail}");
+            Console.WriteLine($"TO: {context.Message.CustomerEmail}");
+            Console.WriteLine("==============Stock Reserved Successfully=================");
+            Console.WriteLine($"Dear {context.Message.CustomerName}");
+            Console.WriteLine($"we notify you for that your Stock was reserved sucessfully {context.Message.ReservationId} for order {context.Message.OrderId}");
+            Console.WriteLine($"we reserve for you :{context.Message.ReservatedItems.Count} item ");
+            await Task.CompletedTask;
+        }
+    }
+
+    public class StockReservedConsumerDefinition : ConsumerDefinition<StockReservedConsumer>
+    {
+        protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<StockReservedConsumer> consumerConfigurator, IRegistrationContext context)
+        {
+            consumerConfigurator.Options<BatchOptions>(options=> options.SetConcurrencyLimit(5).SetMessageLimit(20).SetTimeLimit(TimeSpan.FromSeconds(15)));
+        }
+    }
+
 }

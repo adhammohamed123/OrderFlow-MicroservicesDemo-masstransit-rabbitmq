@@ -29,6 +29,9 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
         var stock = new ReserveStock()
         {
             OrderId=context.Message.OrderId,
+            CustomerEmail= context.Message.CustomerEmail,
+            CustomerName=context.Message.CustomerName,
+            CustomerId=context.Message.CustomerId,
             OrderItems=context.Message.OrderItems
         };
 
