@@ -8,20 +8,32 @@ namespace OrderFlow.NotificationWorker
     {
         private static async Task Consume(ConsumeContext<PaymentProcessed> context)
         {
-            Console.WriteLine($"We Now Sending Notification to {context.Message.CustomerEmail}");
-            Console.WriteLine($"TO: {context.Message.CustomerEmail}");
-            Console.WriteLine("==============Payment Processed Successfully=================");
-            Console.WriteLine($"Dear {context.Message.CustomerName}");
-            Console.WriteLine($"we notify you for that payment processed sucessfully for order {context.Message.OrderId}");
-            Console.WriteLine($"we received :{context.Message.TotalAmount} {context.Message.Currency}");
-            await Task.CompletedTask;
+                if (context.Message.CustomerName == "adham")
+                    throw new InvalidOperationException("Customer Blocked");
+
+                Console.WriteLine($"We Now Sending Notification to {context.Message.CustomerEmail}");
+                Console.WriteLine($"TO: {context.Message.CustomerEmail}");
+                Console.WriteLine("==============Payment Processed Successfully=================");
+                Console.WriteLine($"Dear {context.Message.CustomerName}");
+                Console.WriteLine($"we notify you for that payment processed sucessfully for order {context.Message.OrderId}");
+                Console.WriteLine($"we received :{context.Message.TotalAmount} {context.Message.Currency}");
+                await Task.CompletedTask;
+           
         }
 
         public async Task Consume(ConsumeContext<Batch<PaymentProcessed>> context)
         {
             foreach (var consumeContext in context.Message)
             {
-                await Consume(consumeContext);
+                try
+                {
+                  await Consume(consumeContext);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Eror🙄occured!");
+                    await context.Publish<Fault<PaymentProcessed>>(consumeContext.Message);
+                }
             }
         }
     }
