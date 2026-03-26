@@ -42,23 +42,23 @@ namespace OrderFlow.API.Controllers
 
             try
             {
-                await _publish.Publish(ordercreated, context => context.CorrelationId = ordercreated.OrderId, linkedCts.Token);
+                await _publish.Publish(ordercreated, context => context.CorrelationId = ordercreated.OrderId, linkedCts.Token);//cancellationToken);
             }
-            //catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            //{
-            //    return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
-            //}
-            //catch (OperationCanceledException)
-            //{
-            //    Console.WriteLine("user request cancelation for his request and no need to send response from us");
-            //}
-            catch(OperationCanceledException)
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                if(timeoutCts.IsCancellationRequested)
-                    return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
-
+                return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
+            }
+            catch (OperationCanceledException)
+            {
                 Console.WriteLine("user request cancelation for his request and no need to send response from us");
             }
+            //catch (OperationCanceledException)
+            //{
+            //    if(timeoutCts.IsCancellationRequested)
+            //        return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
+
+            //    Console.WriteLine("user request cancelation for his request and no need to send response from us");
+            //}
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);

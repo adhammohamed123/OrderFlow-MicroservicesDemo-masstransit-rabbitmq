@@ -32,7 +32,7 @@ namespace OrderFlow.NotificationWorker
                 catch (Exception)
                 {
                     Console.WriteLine("Eror🙄occured!");
-                    await context.Publish<Fault<PaymentProcessed>>(consumeContext.Message);
+                    //await context.Publish<Fault<PaymentProcessed>>(consumeContext.Message);
                 }
             }
         }

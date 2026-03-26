@@ -10,5 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OrderFlow.Contracts\OrderFlow.Contracts.csproj" />
+    <ProjectReference Include="..\OrderFlow.Infrastracture\OrderFlow.Infrastracture.csproj" />
   </ItemGroup>
 </Project>

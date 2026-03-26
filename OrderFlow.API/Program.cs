@@ -1,5 +1,8 @@
 using MassTransit;
+using OrderFlow.Contracts.Commands;
 using OrderFlow.Contracts.Events;
+using OrderFlow.Contracts.Events.Order;
+using OrderFlow.Infrastracture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,11 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
+builder.Services.AddInfrastructure();
 builder.Services.AddMassTransit(buscfg =>
 {
-   
-
+    //buscfg.SetKebabCaseEndpointNameFormatter(); 
+    buscfg.AddEntityFrameworkOutbox<ApplicationDbContext>(cfg =>
+    {
+        cfg.UseSqlServer();
+        cfg.UseBusOutbox();// api layer
+        cfg.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
+        cfg.QueryDelay = TimeSpan.FromSeconds(10);
+    });
     buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
     {
         rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>
@@ -23,6 +32,7 @@ builder.Services.AddMassTransit(buscfg =>
         });
         //rabbitbusfactorycfgtor.SendTopology.UseCorrelationId<OrderCreated>(o => o.Id);
     });
+
 });
 
 var app = builder.Build();

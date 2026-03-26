@@ -1,4 +1,5 @@
 using MassTransit;
+using MassTransit.RabbitMqTransport.Configuration;
 using OrderFlow.Contracts.Commands;
 using OrderFlow.Contracts.Events.Order;
 using OrderFlow.Contracts.Events.Payment;
@@ -35,8 +36,19 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
             OrderItems=context.Message.OrderItems
         };
 
-        var endpoint = await context.GetSendEndpoint(new Uri("queue:inventory-service"));
-        await endpoint.Send(stock);
+        //var endpoint = await context.GetSendEndpoint(new Uri("queue:inventory-service"));
+       // await endpoint.Send(stock);
+       await context.Send(stock);
        // await context.Publish(stock);
     }
 }
+
+//public class OrderCreatedConsumerDefinition : ConsumerDefinition<OrderCreatedConsumer>
+//{
+//    protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<OrderCreatedConsumer> consumerConfigurator, IRegistrationContext context)
+//    {
+//        endpointConfigurator.UseInMemoryOutbox(context);
+//        if (endpointConfigurator is IRabbitMqReceiveEndpointConfigurator rmq)
+//            //rmq.Lazy = true;
+//    }
+//}

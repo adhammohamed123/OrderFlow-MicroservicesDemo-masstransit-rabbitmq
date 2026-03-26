@@ -6,6 +6,7 @@
   <Folder Name="/src/">
     <Project Path="OrderFlow.API/OrderFlow.API.csproj" Id="736d904c-fece-4b54-bbe4-5a5529dfc7cf" />
     <Project Path="OrderFlow.Contracts/OrderFlow.Contracts.csproj" Id="04c5a180-86e8-41d3-b60f-43f4d01f5140" />
+    <Project Path="OrderFlow.Infrastracture/OrderFlow.Infrastracture.csproj" Id="2502951c-1fed-4b61-bea5-b57282a22176" />
     <Project Path="OrderFlow.InventoryWorker/OrderFlow.InventoryWorker.csproj" Id="702d6c6e-946e-4587-a28a-cf952aee7d6a" />
     <Project Path="OrderFlow.NotificationWorker/OrderFlow.NotificationWorker.csproj" Id="72262cba-83fe-4ecf-8598-5d92d57076cf" />
     <Project Path="OrderFlow.PaymentWorker/OrderFlow.PaymentWorker.csproj" Id="9c2a9fe5-e468-4ea0-9db0-14e53c31c362" />
