@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace OrderFlow.Infrastracture
-{
+{ 
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):DbContext(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
