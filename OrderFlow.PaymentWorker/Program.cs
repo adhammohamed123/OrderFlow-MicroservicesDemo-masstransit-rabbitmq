@@ -56,11 +56,24 @@ builder.Services.AddMassTransit(buscfg =>
             //    // redelivery for long time minites , hours ,days and for this is not in memory 
             //    redeliverycfg.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
             //});
-            
-            endpoint.UseScheduledRedelivery(ScheduleRedlivery =>
+
+            endpoint.UseKillSwitch(trip =>
             {
-                ScheduleRedlivery.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+                trip.SetActivationThreshold(10);
+                trip.SetTripThreshold(0.15);
+                trip.SetRestartTimeout(TimeSpan.FromMinutes(2));
+                trip.SetTrackingPeriod(TimeSpan.FromMinutes(5));
+                trip.SetExceptionFilter(exc =>
+                {
+                    exc.Handle<ApplicationException>();
+                    exc.Ignore<DbUpdateConcurrencyException>();
+                });
             });
+
+            //endpoint.UseScheduledRedelivery(ScheduleRedlivery =>
+            //{
+            //    ScheduleRedlivery.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+            //});
             // level 1 - in memory retry
             endpoint.UseMessageRetry(retrycfg => 
             {

@@ -25,13 +25,17 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
         {
             throw new InvalidOperationException("Eror Customer Is Blocked");
         }
+        else if(context.Message.CustomerName=="Down")
+        {
+            throw new ApplicationException("Some Down behavior");
+        }
 
 
 
 
 
 
-        Console.WriteLine($"Payment Started to Process Order {context.Message.OrderId} -- {context.Message.CustomerName}-- {context.Message.TotalAmount} {context.Message.Currency}");
+            Console.WriteLine($"Payment Started to Process Order {context.Message.OrderId} -- {context.Message.CustomerName}-- {context.Message.TotalAmount} {context.Message.Currency}");
         await Task.Delay(2000);
         Console.WriteLine("Payment Done Successfully");
 
