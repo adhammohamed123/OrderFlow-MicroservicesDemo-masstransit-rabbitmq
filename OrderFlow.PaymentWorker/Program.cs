@@ -38,7 +38,14 @@ builder.Services.AddMassTransit(buscfg =>
             {
                 // Policy
                 //retrycfg.Immediate(3); 
-                retrycfg.Interval(3,TimeSpan.FromSeconds(2)); // retry 3 times and between each retry 2s 
+                //retrycfg.Interval(3,TimeSpan.FromSeconds(2)); // retry 3 times and between each retry 2s 
+                retrycfg.Intervals(
+                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(3),
+                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(7)
+                    );
                 //retrycfg.Exponential()
 
                 // handle
