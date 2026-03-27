@@ -37,7 +37,9 @@ builder.Services.AddMassTransit(buscfg =>
             endpoint.UseMessageRetry(retrycfg => 
             {
                 // Policy
-                retrycfg.Immediate(3); 
+                //retrycfg.Immediate(3); 
+                retrycfg.Interval(3,TimeSpan.FromSeconds(2)); // retry 3 times and between each retry 2s 
+                //retrycfg.Exponential()
 
                 // handle
                 retrycfg.Handle<DbUpdateConcurrencyException>();
