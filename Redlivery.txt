@@ -1,0 +1,9 @@
+to enable it we have to choice 
+1) use delayed exchange plagin in rabbitmq 2) use quartz/hangfire scheduler
+
+[1] using delyed exchange plagin 
+  -- most easy way and no database needed to schedual message redelivery
+  -- enable plugin in RabbitMq using this command : rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+  -- then restart rabbitmq if needed , this will make us has a new Exchange type x-delayed-message , this exchange not forward message to queue directly but forward after a set of time
+  -- if this plugin is not shipped with your docker image , dont worry this file from github :  download rabbitmq_delayed_message_exchange-4.1.0.ez
+    then use : docker cp rabbitmq_delayed_message_exchange-4.1.0.ez {containerId}:/plugins , then enable plugin and this is work

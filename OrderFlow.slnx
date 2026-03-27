@@ -4,6 +4,7 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/src/">
+    <File Path="Redlivery.txt" />
     <Project Path="OrderFlow.API/OrderFlow.API.csproj" Id="736d904c-fece-4b54-bbe4-5a5529dfc7cf" />
     <Project Path="OrderFlow.Contracts/OrderFlow.Contracts.csproj" Id="04c5a180-86e8-41d3-b60f-43f4d01f5140" />
     <Project Path="OrderFlow.Infrastracture/OrderFlow.Infrastracture.csproj" Id="2502951c-1fed-4b61-bea5-b57282a22176" />

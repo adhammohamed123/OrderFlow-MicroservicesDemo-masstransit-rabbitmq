@@ -33,6 +33,11 @@ builder.Services.AddMassTransit(buscfg =>
         {
             // endpoint.UseEntityFrameworkOutbox<ApplicationDbContext>(buscontext);
 
+            endpoint.UseDelayedRedelivery(redeliverycfg =>
+            {
+                // redelivery for long time minites , hours ,days and for this is not in memory 
+                redeliverycfg.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+            });
             // level 1 - in memory retry
             endpoint.UseMessageRetry(retrycfg => 
             {
@@ -62,7 +67,6 @@ builder.Services.AddMassTransit(buscfg =>
                 retrycfg.Ignore<NullReferenceException>();
                 retrycfg.Ignore<HttpRequestException>(filter=>filter.StatusCode== System.Net.HttpStatusCode.Unauthorized);
             });
-
             endpoint.UseInMemoryInboxOutbox(buscontext);
             endpoint.ConfigureConsumer<OrderCreatedConsumer>(buscontext);
             //endpoint.Lazy= true;
