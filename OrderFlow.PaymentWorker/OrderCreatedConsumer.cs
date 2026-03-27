@@ -1,5 +1,6 @@
 using MassTransit;
 using MassTransit.RabbitMqTransport.Configuration;
+using Microsoft.EntityFrameworkCore;
 using OrderFlow.Contracts.Commands;
 using OrderFlow.Contracts.Events.Order;
 using OrderFlow.Contracts.Events.Payment;
@@ -9,6 +10,26 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
 
     public async Task Consume(ConsumeContext<OrderCreated> context)
     {
+        // simulate eror to retry
+        Console.WriteLine($"Attempt: {context.GetRetryAttempt()} --Previous Retry Count: {context.GetRetryCount()}");
+        if(context.Message.CustomerName=="DbDown")
+        {
+            throw new DbUpdateConcurrencyException("Database is down now we will retry again");
+
+            //DbUpdateConcurrencyException()
+            //HttpRequestException()
+            //TimeoutException()
+        }
+        else if(context.Message.CustomerName=="Eror")
+        {
+            throw new InvalidOperationException("Eror Customer Is Blocked");
+        }
+
+
+
+
+
+
         Console.WriteLine($"Payment Started to Process Order {context.Message.OrderId} -- {context.Message.CustomerName}-- {context.Message.TotalAmount} {context.Message.Currency}");
         await Task.Delay(2000);
         Console.WriteLine("Payment Done Successfully");
