@@ -3,13 +3,16 @@
   
 
   <ItemGroup>
+    <PackageReference Include="CrystalQuartz.AspNetCore" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	  <PackageReference Include="MassTransit.RabbitMQ" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-
+	  <PackageReference Include="Quartz.Dashboard" />
+	  <PackageReference Include="Quartz.Extensions.DependencyInjection" />
+	  <PackageReference Include="Quartz.Serialization.Json" />
   </ItemGroup>
 
   
