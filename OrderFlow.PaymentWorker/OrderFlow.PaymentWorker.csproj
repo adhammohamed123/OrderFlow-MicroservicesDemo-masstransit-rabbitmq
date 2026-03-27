@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<ItemGroup>
+		<PackageReference Include="MassTransit.Quartz" />
+		<PackageReference Include="Microsoft.Data.SqlClient" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
 		<PackageReference Include="MassTransit.RabbitMQ" />
+		<PackageReference Include="Quartz.Serialization.Json" />
 	</ItemGroup>
 
 	<ItemGroup>

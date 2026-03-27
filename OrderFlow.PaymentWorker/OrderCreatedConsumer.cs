@@ -11,8 +11,8 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
     public async Task Consume(ConsumeContext<OrderCreated> context)
     {
         // simulate eror to retry
-        Console.WriteLine($"Attempt: {context.GetRetryAttempt()} --Previous Retry Count: {context.GetRetryCount()}-- {DateTime.UtcNow}");
-        Console.WriteLine($"========Previous Retry Count: {context.GetRedeliveryCount()}-- {DateTime.UtcNow}");
+        Console.WriteLine($"Attempt: {context.GetRetryAttempt()} --Previous Retry Count: {context.GetRetryCount()}-- {DateTime.Now}");
+        Console.WriteLine($"========Previous Retry Count: {context.GetRedeliveryCount()}-- {DateTime.Now}");
         if (context.Message.CustomerName=="DbDown")
         {
             throw new DbUpdateConcurrencyException("Database is down now we will retry again");

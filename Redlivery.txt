@@ -7,3 +7,86 @@ to enable it we have to choice
   -- then restart rabbitmq if needed , this will make us has a new Exchange type x-delayed-message , this exchange not forward message to queue directly but forward after a set of time
   -- if this plugin is not shipped with your docker image , dont worry this file from github :  download rabbitmq_delayed_message_exchange-4.1.0.ez
     then use : docker cp rabbitmq_delayed_message_exchange-4.1.0.ez {containerId}:/plugins , then enable plugin and this is work
+
+    rabbitmq-plugins disable rabbitmq_delayed_message_exchange
+
+
+[2] using quartz to scheduel message for redelivery
+
+step 1) install some packages
+ - MassTransit.Quartz --> this reference package Quartz.Extensions.Hosting by default 
+ - Microsoft.Data.SqlClient (quartz need this to read/write from db)
+ - Quartz.Serialization.Json (to store jobdata as json not binary in database)
+
+step 2) prepere DB --> this is done by executing Sql Script (search for it based on your DBMS)
+
+step 3) Configure Quartz with enabling persistanse jobstore
+builder.Services.AddQuartz(options =>
+{
+    options.UsePersistentStore(p =>
+    {
+        var connectionstring = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Masstransit;Integrated Security=True;Trust Server Certificate=True;";
+        p.UseSqlServer(connectionstring);
+        p.UseNewtonsoftJsonSerializer();
+    });
+});
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete= true;
+});
+
+step 4) add Quartz-Masstransit Config
+
+
+builder.Services.AddMassTransit(buscfg =>
+{
+   // Just Tell masstransit that we will use quartz /hangfire scheduler to schdual msgs
+    buscfg.AddPublishMessageScheduler();
+    // this is most important thing add consumers that are built in Masstransit.Quartz (this consumers handel msgs for scheduale) + with the help of rabbitbusfactorycfgtor.ConfigureEndpoints(buscontext); that are placed down --> Endpoint Are Now Done and has address uri("queue:quartz") 
+    buscfg.AddQuartzConsumers();
+    
+   
+    buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
+    {
+        rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>
+        {
+            hostcfg.Username("test");
+            hostcfg.Password("123");
+
+        });
+       // this tell bus to use message scheduler to schdual msgs (this mean use Quartz/HangFire Scheduler)
+        rabbitbusfactorycfgtor.UsePublishMessageScheduler(); 
+
+        rabbitbusfactorycfgtor.ReceiveEndpoint("payment-service", endpoint => 
+        {
+          // Second Level
+            endpoint.UseScheduledRedelivery(ScheduleRedlivery =>
+            {
+                ScheduleRedlivery.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+            });
+            // level 1 - in memory retry
+            endpoint.UseMessageRetry(retrycfg =>  { Put message retry policy here });
+            endpoint.UseInMemoryInboxOutbox(buscontext);
+            endpoint.ConfigureConsumer<OrderCreatedConsumer>(buscontext);
+        });
+        
+        rabbitbusfactorycfgtor.ConfigureEndpoints(buscontext);
+    });
+});
+
+
+////////////////////////////////////understanding what happen after all of this configs
+1) we publish message and arrive to broker (regardless of we directly publish it or a background service (outbox pattern enabled))
+
+2) message arrived to rabbitmq --> queue --> rabbit will push it to consumer (ordercreatedconsumer in our example)
+3) consumer trying to process it (until now message is unack in rabbit queue)
+4) if consumer get un exception , messtransit see we configure RetryPolicy (for short time failures for example 5 tries in 30s)
+5) message still in memory and unack in rabbit, and consumer will go in retry loop 
+6) if succeeded --> Ack is sent to rabbit and message will delleted from it 
+7) if still excption occured after all retries (after 5 retries-i mean last one fineshed with un error still)
+8) masstransit see if we configure second level (redelivery) if we configure it , send ack to delete it from queue but before it is send/publish message to quartz queue (publish messageSchedule -- see exchage for that)
+9) we now has original msg queue is empty(because of ack sent previously), and Quartz queue has a message
+10) dont forget we have a built in consumer for this queue (see: buscfg.AddQuartzConsumers();)
+11) this consumer will consume this msg and process it (add jobdetails and trigger for this in quartz tables in DB)
+12) now quartz schudler observe it and when we reatch to tigger quartz will publish message to its original queue (in fact this will publish to exchange as a new message but with a redlivery count +1)
+and so on untill if message redlivery also exceed configured count and still excption occured now we will consider it as a Fault (will published) and Message moved to _error queue

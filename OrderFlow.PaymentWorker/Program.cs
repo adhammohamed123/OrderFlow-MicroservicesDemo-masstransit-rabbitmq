@@ -4,13 +4,28 @@ using OrderFlow.Contracts.Commands;
 using OrderFlow.Contracts.MessagingInfra;
 using OrderFlow.Infrastracture;
 using Payment;
-using System.Data;
+using Quartz;
+
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddInfrastructure();
 
+builder.Services.AddQuartz(options =>
+{
+    options.UsePersistentStore(p =>
+    {
+        var connectionstring = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Masstransit;Integrated Security=True;Trust Server Certificate=True;";
+
+
+        p.UseSqlServer(connectionstring);
+        p.UseNewtonsoftJsonSerializer();
+    });
+});
+
 builder.Services.AddMassTransit(buscfg =>
 {
+    buscfg.AddPublishMessageScheduler();
+    buscfg.AddQuartzConsumers();
     //buscfg.AddConsumer<OrderCreatedConsumer>();
     buscfg.AddConsumers(typeof(Program).Assembly);
     //buscfg.AddEntityFrameworkOutbox<ApplicationDbContext>(cfg =>
@@ -19,7 +34,9 @@ builder.Services.AddMassTransit(buscfg =>
     //    cfg.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
     //    cfg.QueryDelay = TimeSpan.FromSeconds(10);
     //});
+
     buscfg.AddInMemoryInboxOutbox();
+   
     buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
     {
         rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>
@@ -29,14 +46,20 @@ builder.Services.AddMassTransit(buscfg =>
 
         });
         //rabbitbusfactorycfgtor.Lazy= true;
+        rabbitbusfactorycfgtor.UsePublishMessageScheduler(); 
         rabbitbusfactorycfgtor.ReceiveEndpoint("payment-service", endpoint => 
         {
             // endpoint.UseEntityFrameworkOutbox<ApplicationDbContext>(buscontext);
 
-            endpoint.UseDelayedRedelivery(redeliverycfg =>
+            //endpoint.UseDelayedRedelivery(redeliverycfg =>
+            //{
+            //    // redelivery for long time minites , hours ,days and for this is not in memory 
+            //    redeliverycfg.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+            //});
+            
+            endpoint.UseScheduledRedelivery(ScheduleRedlivery =>
             {
-                // redelivery for long time minites , hours ,days and for this is not in memory 
-                redeliverycfg.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
+                ScheduleRedlivery.Intervals(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2));
             });
             // level 1 - in memory retry
             endpoint.UseMessageRetry(retrycfg => 
@@ -76,5 +99,9 @@ builder.Services.AddMassTransit(buscfg =>
     });
 });
 
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete= true;
+});
 var host = builder.Build();
 host.Run();
