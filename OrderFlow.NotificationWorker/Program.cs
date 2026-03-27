@@ -9,12 +9,13 @@ builder.Services.AddMassTransit(buscfg =>
 {
     //buscfg.AddConsumer<OrderCreatedConsumer>();
     buscfg.AddConsumers(typeof(Program).Assembly);
-    buscfg.AddEntityFrameworkOutbox<ApplicationDbContext>(cfg =>
-    {
-        cfg.UseSqlServer();
-        cfg.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
-        cfg.QueryDelay = TimeSpan.FromSeconds(10);
-    });
+    //buscfg.AddEntityFrameworkOutbox<ApplicationDbContext>(cfg =>
+    //{
+    //    cfg.UseSqlServer();
+    //    cfg.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
+    //    cfg.QueryDelay = TimeSpan.FromSeconds(10);
+    //});
+    buscfg.AddInMemoryInboxOutbox();
     buscfg.UsingRabbitMq((buscontext, rabbitbusfactorycfgtor) =>
     {
         rabbitbusfactorycfgtor.Host("localhost", "masstransit", hostcfg =>
@@ -26,7 +27,10 @@ builder.Services.AddMassTransit(buscfg =>
 
         rabbitbusfactorycfgtor.ReceiveEndpoint("notification-service", endpoint =>
         {
-            endpoint.UseEntityFrameworkOutbox<ApplicationDbContext>(buscontext);
+            //endpoint.UseEntityFrameworkOutbox<ApplicationDbContext>(buscontext);
+
+            endpoint.UseInMemoryInboxOutbox(buscontext);
+
             endpoint.ConfigureConsumer<PaymentProcessedConsumer>(buscontext);
              // we need to configure message ttl at queue level
              endpoint.SetQueueArgument("x-message-ttl",TimeSpan.FromMinutes(1));

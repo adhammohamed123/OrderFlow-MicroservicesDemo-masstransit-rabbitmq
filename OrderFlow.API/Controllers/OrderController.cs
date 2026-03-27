@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using OrderFlow.Contracts.Dtos;
 using OrderFlow.Contracts.Events;
 using OrderFlow.Contracts.Events.Order;
+using OrderFlow.Infrastracture;
 
 namespace OrderFlow.API.Controllers
 {
     [ApiController]
     [Route("api/orders")]
-    public class OrderController(IPublishEndpoint publish) : ControllerBase
+    public class OrderController(IPublishEndpoint publish,ApplicationDbContext dbContext) : ControllerBase
     {
         private readonly IPublishEndpoint _publish = publish;
 
@@ -37,17 +38,19 @@ namespace OrderFlow.API.Controllers
             // publish may take long time , we don't need user to wait a long (note here we publish directly to Broker and not use Outbox pattern)
             // so we need to support canclation of publish (using cancelation token + timer token )--> linked cancelation token 
 
-            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            using var linkedCts= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,timeoutCts.Token);
+            //using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            //using var linkedCts= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,timeoutCts.Token);
 
             try
             {
-                await _publish.Publish(ordercreated, context => context.CorrelationId = ordercreated.OrderId, linkedCts.Token);//cancellationToken);
+                await _publish.Publish(ordercreated, context => context.CorrelationId = ordercreated.OrderId, cancellationToken);//cancellationToken);
+                // now we not publish to broker directly , we will save to Db
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
-            }
+            //catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            //{
+            //    return StatusCode(StatusCodes.Status504GatewayTimeout, "Publish is slow and take long time try again later");
+            //}
             catch (OperationCanceledException)
             {
                 Console.WriteLine("user request cancelation for his request and no need to send response from us");
