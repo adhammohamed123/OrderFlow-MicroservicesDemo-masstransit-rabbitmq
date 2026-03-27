@@ -73,3 +73,15 @@ public class OrderCreatedConsumer : IConsumer<OrderCreated>
 //            //rmq.Lazy = true;
 //    }
 //}
+
+
+public class OrderCreationFaultConsumer : IConsumer<Fault<OrderCreated>>
+{
+    public async Task Consume(ConsumeContext<Fault<OrderCreated>> context)
+    {
+        Console.WriteLine("Do some logic in case of order creation failed and all retries and redliveries are consumed");
+        OrderCreated order =  context.Message.Message;
+        Console.WriteLine("BackWord Logic for order " +order.OrderId);
+         await Task.CompletedTask;
+    }
+}
