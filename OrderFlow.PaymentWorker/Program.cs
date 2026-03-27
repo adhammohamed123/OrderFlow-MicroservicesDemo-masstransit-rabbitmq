@@ -6,19 +6,36 @@ using OrderFlow.Infrastracture;
 using Payment;
 using Quartz;
 
-
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddInfrastructure();
 
 builder.Services.AddQuartz(options =>
 {
+    options.ScheduleJob<SimpleTestQuartzClusterJob>(triger =>
+    {
+        triger.WithIdentity("SimpleTrigger")
+        .WithSimpleSchedule(
+            x => x.WithInterval(TimeSpan.FromSeconds(2)).RepeatForever())
+        ;
+    }, job =>
+    {
+        job.WithIdentity("SimpleJob");
+    });
+    options.SchedulerId = "AUTO";
+    options.SchedulerName = "Runner";
     options.UsePersistentStore(p =>
     {
         var connectionstring = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Masstransit;Integrated Security=True;Trust Server Certificate=True;";
-
-
+        p.RetryInterval = TimeSpan.FromMicroseconds(500);
+        p.UseProperties=true;
         p.UseSqlServer(connectionstring);
         p.UseNewtonsoftJsonSerializer();
+       
+        p.UseClustering(cluster =>
+        {
+            cluster.CheckinInterval = TimeSpan.FromSeconds(1);
+            cluster.CheckinMisfireThreshold = TimeSpan.FromSeconds(5);
+        });
     });
 });
 
@@ -115,6 +132,7 @@ builder.Services.AddMassTransit(buscfg =>
 builder.Services.AddQuartzHostedService(options =>
 {
     options.WaitForJobsToComplete= true;
+    options.StartDelay= TimeSpan.FromSeconds(5);
 });
 var host = builder.Build();
 host.Run();
